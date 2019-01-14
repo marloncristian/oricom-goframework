@@ -10,19 +10,6 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-var (
-	tokenSecret string
-)
-
-// Init initilizes the global variables from configuration
-func Initialize(secret string) {
-	// cfg, err := frwCore.GetConfiguration()
-	// if err != nil {
-	// 	log.Printf("Error reading configuration settings: %s", err)
-	// }
-	tokenSecret = secret
-}
-
 // CreateToken : creates a jwt token for a especific user
 func CreateToken(sub string, name string, role []string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
