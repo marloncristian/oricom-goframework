@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// GetConfiguration returns a single instance of configuration
-func GetConfiguration(configuration interface{}) error {
+// ParseConfiguration returns a single instance of configuration
+func ParseConfiguration(configuration interface{}) error {
 
 	evar := os.Getenv("ORI_ENV")
 	scnf := "development"
