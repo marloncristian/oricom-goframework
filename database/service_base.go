@@ -3,38 +3,13 @@ package database
 import (
 	"context"
 	"errors"
-	"log"
 	"reflect"
-	"time"
 
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/bson/primitive"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/mongodb/mongo-go-driver/mongo/options"
 )
-
-//var session *mgo.Session
-var client *mongo.Client
-var database *mongo.Database
-
-// Initialize initializes the global variables
-func Initialize(connectionURL string, databaseName string) {
-
-	client, err := mongo.NewClient(connectionURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	database = client.Database(databaseName)
-}
 
 // ServiceBase base service struct
 type ServiceBase struct {
