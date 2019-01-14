@@ -155,7 +155,7 @@ func (base ServiceBase) GetAll(slice interface{}) error {
 		return errors.New("parameter slice must be a pointer")
 	}
 
-	if err := base.query(nil, slice); err != nil {
+	if err := base.query(bson.D{{}}, slice); err != nil {
 		return err
 	}
 
@@ -164,7 +164,7 @@ func (base ServiceBase) GetAll(slice interface{}) error {
 
 // GetAllWithSkipLimit retrieves chunks of information defined by parameters skip and limit
 func (base ServiceBase) GetAllWithSkipLimit(slice interface{}, skip int64, limit int64) error {
-	return base.queryAndPage(nil, slice, skip, limit)
+	return base.queryAndPage(bson.D{{}}, slice, skip, limit)
 }
 
 // GetWithSkipLimit returns a filtered and paged document list from repository
@@ -175,7 +175,7 @@ func (base ServiceBase) GetWithSkipLimit(query interface{}, slice interface{}, s
 // CountAll returns a count of all documents in repository
 func (base ServiceBase) CountAll() (int64, error) {
 	col := database.Collection(base.collectionName)
-	cnt, err := col.Count(context.Background(), nil)
+	cnt, err := col.Count(nil, bson.D{{}})
 	if err != nil {
 		return 0, err
 	}
