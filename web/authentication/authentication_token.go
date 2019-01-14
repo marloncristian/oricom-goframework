@@ -14,8 +14,12 @@ var (
 	tokenSecret string
 )
 
-// Init initilizes the global variables
-func Init(secret string) {
+// Init initilizes the global variables from configuration
+func Initialize(secret string) {
+	// cfg, err := frwCore.GetConfiguration()
+	// if err != nil {
+	// 	log.Printf("Error reading configuration settings: %s", err)
+	// }
 	tokenSecret = secret
 }
 
@@ -59,4 +63,47 @@ func ParseTokenFromHeader(r *http.Request) (jwt.MapClaims, error) {
 		return nil, errors.New("No authorization header")
 	}
 	return ParseToken(authorizationHeader[1])
+}
+
+// GetTokenRole Gets the role claim of the token
+func GetTokenRole(tkn jwt.MapClaims) []string {
+	val := []string{}
+	for _, r := range tkn["role"].([]interface{}) {
+		val = append(val, r.(string))
+	}
+	return val
+}
+
+// GetTokenRoleFromHeader Gets the role claim of the token from header
+func GetTokenRoleFromHeader(r *http.Request) ([]string, error) {
+	token, err := ParseTokenFromHeader(r)
+	if err != nil {
+		return nil, err
+	}
+	return GetTokenRole(token), nil
+}
+
+// CheckTokenRole returns if an role exists in the roles array
+func CheckTokenRole(role string, tkn jwt.MapClaims) bool {
+	roles := GetTokenRole(tkn)
+	for _, rle := range roles {
+		if strings.ToLower(rle) == strings.ToLower(role) {
+			return true
+		}
+	}
+	return false
+}
+
+// CheckTokenRoleFromHeader returns if an role exists in the roles array from header request
+func CheckTokenRoleFromHeader(role string, r *http.Request) bool {
+	roles, err := GetTokenRoleFromHeader(r)
+	if err != nil || len(roles) == 0 {
+		return false
+	}
+	for _, rle := range roles {
+		if strings.ToLower(rle) == strings.ToLower(role) {
+			return true
+		}
+	}
+	return false
 }
