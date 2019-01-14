@@ -7,7 +7,7 @@ import (
 )
 
 // GetConfiguration returns a single instance of configuration
-func GetConfiguration(configuration *interface{}) error {
+func GetConfiguration(configuration interface{}) error {
 
 	evar := os.Getenv("ORI_ENV")
 	scnf := "development"
