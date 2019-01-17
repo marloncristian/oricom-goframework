@@ -123,6 +123,26 @@ func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 	return nil
 }
 
+// GetByHexID returns an especific element its hexa string representation
+func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
+	objID, err := primitive.ObjectIDFromHex(hexID)
+	if err != nil {
+		return err
+	}
+	if err := base.GetOne(bson.M{"_id": objID}, &res); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetByObjID returns an especific element its objectiid
+func (base ServiceBase) GetByObjID(objID primitive.ObjectID, res interface{}) error {
+	if err := base.GetOne(bson.M{"_id": objID}, &res); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetAll : returns all documents from collection
 func (base ServiceBase) GetAll(slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
