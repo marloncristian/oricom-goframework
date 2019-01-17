@@ -105,15 +105,16 @@ func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 	col := database.Collection(base.collectionName)
 	cur, err := col.Find(context.Background(), query, opts)
 	if err != nil {
-		return EntityNotFound{}
+		return err
 	}
 	defer cur.Close(context.Background())
 
-	if cur.Next(context.Background()) {
-		if err := cur.Decode(res); err != nil {
-			return err
-		}
-		return nil
+	if hasNext := cur.Next(context.Background()); !hasNext {
+		return EntityNotFound{}
+	}
+
+	if err := cur.Decode(res); err != nil {
+		return err
 	}
 
 	if err := cur.Err(); err != nil {
