@@ -126,11 +126,14 @@ func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 
 // GetByHexID returns an especific element its hexa string representation
 func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
+	if reflect.ValueOf(res).Kind() != reflect.Ptr {
+		return InvalidArgument{ Description : "parameter res must be a pointer" }
+	}
 	objID, err := primitive.ObjectIDFromHex(hexID)
 	if err != nil {
 		return err
 	}
-	if err := base.GetOne(bson.M{"_id": objID}, &res); err != nil {
+	if err := base.GetOne(bson.M{"_id": objID}, res); err != nil {
 		return err
 	}
 	return nil
@@ -138,7 +141,10 @@ func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
 
 // GetByObjID returns an especific element its objectiid
 func (base ServiceBase) GetByObjID(objID primitive.ObjectID, res interface{}) error {
-	if err := base.GetOne(bson.M{"_id": objID}, &res); err != nil {
+	if reflect.ValueOf(res).Kind() != reflect.Ptr {
+		return InvalidArgument{ Description : "parameter res must be a pointer" }
+	}
+	if err := base.GetOne(bson.M{"_id": objID}, res); err != nil {
 		return err
 	}
 	return nil
