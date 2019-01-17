@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"reflect"
 
 	"github.com/mongodb/mongo-go-driver/bson"
@@ -19,7 +18,7 @@ type ServiceBase struct {
 // fill parses and fill the collection documents
 func (base ServiceBase) fill(slice interface{}, cursor mongo.Cursor) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return errors.New("parameter slice must be a pointer")
+		return InvalidArgument{ Description : "parameter slice must be a pointer" }
 	}
 
 	for cursor.Next(context.Background()) {
@@ -52,7 +51,7 @@ func (base ServiceBase) fill(slice interface{}, cursor mongo.Cursor) error {
 // query retrieves documents by query or all
 func (base ServiceBase) query(query interface{}, slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return errors.New("parameter slice must be a pointer")
+		return InvalidArgument{ Description : "parameter slice must be a pointer" }
 	}
 
 	col := database.Collection(base.collectionName)
@@ -72,7 +71,7 @@ func (base ServiceBase) query(query interface{}, slice interface{}) error {
 // queryAndPage retrieves an specific page of a document query
 func (base ServiceBase) queryAndPage(query interface{}, slice interface{}, skip int64, limit int64) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return errors.New("parameter slice must be a pointer")
+		return InvalidArgument{ Description : "parameter slice must be a pointer" }
 	}
 
 	opt := options.FindOptions{
@@ -95,9 +94,9 @@ func (base ServiceBase) queryAndPage(query interface{}, slice interface{}, skip 
 }
 
 // GetOne : returns a single instance of an object
-func (base ServiceBase) GetOne(query interface{}, res interface{}) (bool, error) {
+func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
-		return false, errors.New("parameter res must be a pointer")
+		return InvalidArgument{ Description : "parameter res must be a pointer" }
 	}
 
 	opts := options.Find()
@@ -106,34 +105,32 @@ func (base ServiceBase) GetOne(query interface{}, res interface{}) (bool, error)
 	col := database.Collection(base.collectionName)
 	cur, err := col.Find(context.Background(), query, opts)
 	if err != nil {
-		return false, err
+		return EntityNotFound{}
 	}
 	defer cur.Close(context.Background())
 
 	if cur.Next(context.Background()) {
 		if err := cur.Decode(res); err != nil {
-			return false, err
+			return err
 		}
-		return true, nil
+		return nil
 	}
 
 	if err := cur.Err(); err != nil {
-		return false, err
+		return err
 	}
 
-	return false, nil
+	return nil
 }
 
 // GetAll : returns all documents from collection
 func (base ServiceBase) GetAll(slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return errors.New("parameter slice must be a pointer")
+		return InvalidArgument{ Description : "parameter slice must be a pointer" }
 	}
-
 	if err := base.query(bson.D{{}}, slice); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -174,14 +171,12 @@ func (base ServiceBase) InsertOne(value interface{}) (primitive.ObjectID, error)
 	if err != nil {
 		return primitive.ObjectID{}, err
 	}
-
 	return res.InsertedID.(primitive.ObjectID), nil
 }
 
 // UpdateOne : updates an document
 func (base ServiceBase) UpdateOne(id primitive.ObjectID, values map[string]interface{}, result interface{}) error {
 	col := database.Collection(base.collectionName)
-
 	doc := col.FindOneAndUpdate(context.Background(), bson.M{"_id": id}, bson.M{"$set": values})
 	if result == nil {
 		return nil
@@ -189,14 +184,12 @@ func (base ServiceBase) UpdateOne(id primitive.ObjectID, values map[string]inter
 	if err := doc.Decode(result); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 // DeleteOne removes an elemento from database
 func (base ServiceBase) DeleteOne(id primitive.ObjectID) error {
 	col := database.Collection(base.collectionName)
-
 	_, err := col.DeleteOne(context.Background(), bson.M{"_id": id})
 	if err != nil {
 		return err
