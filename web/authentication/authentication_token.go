@@ -94,3 +94,21 @@ func CheckTokenRoleFromHeader(role string, r *http.Request) bool {
 	}
 	return false
 }
+
+// GetTokenSub Gets the sub claim of the token
+func GetTokenSub(tkn jwt.MapClaims) []string {
+	val := []string{}
+	for _, r := range tkn["sub"].([]interface{}) {
+		val = append(val, r.(string))
+	}
+	return val
+}
+
+// GetTokenSubFromHeader Gets the sub claim of the token from header
+func GetTokenSubFromHeader(r *http.Request) ([]string, error) {
+	token, err := ParseTokenFromHeader(r)
+	if err != nil {
+		return nil, err
+	}
+	return GetTokenSub(token), nil
+}
