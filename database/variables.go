@@ -5,7 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/mongodb/mongo-go-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //var session *mgo.Session
@@ -17,7 +18,7 @@ var (
 // Initialize initializes the global variables
 func Initialize(connectionURL string, databaseName string) {
 
-	client, err := mongo.NewClient(connectionURL)
+	client, err := mongo.NewClient(options.Client().ApplyURI(connectionURL))
 	if err != nil {
 		log.Fatal(err)
 	}

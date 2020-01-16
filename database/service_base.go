@@ -4,10 +4,10 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/mongodb/mongo-go-driver/bson/primitive"
-	"github.com/mongodb/mongo-go-driver/mongo"
-	"github.com/mongodb/mongo-go-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // ServiceBase base service struct
@@ -16,9 +16,9 @@ type ServiceBase struct {
 }
 
 // fill parses and fill the collection documents
-func (base ServiceBase) fill(slice interface{}, cursor mongo.Cursor) error {
+func (base ServiceBase) fill(slice interface{}, cursor *mongo.Cursor) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter slice must be a pointer" }
+		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
 
 	for cursor.Next(context.Background()) {
@@ -51,7 +51,7 @@ func (base ServiceBase) fill(slice interface{}, cursor mongo.Cursor) error {
 // query retrieves documents by query or all
 func (base ServiceBase) query(query interface{}, slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter slice must be a pointer" }
+		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
 
 	col := database.Collection(base.collectionName)
@@ -71,16 +71,15 @@ func (base ServiceBase) query(query interface{}, slice interface{}) error {
 // queryAndPage retrieves an specific page of a document query
 func (base ServiceBase) queryAndPage(query interface{}, slice interface{}, skip int64, limit int64) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter slice must be a pointer" }
+		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
 
-	opt := options.FindOptions{
-		Limit: &limit,
-		Skip:  &skip,
-	}
+	opt := options.Find()
+	opt.SetLimit(limit)
+	opt.SetSkip(skip)
 
 	col := database.Collection(base.collectionName)
-	cur, err := col.Find(nil, query, &opt)
+	cur, err := col.Find(context.TODO(), query, opt)
 	if err != nil {
 		return err
 	}
@@ -96,7 +95,7 @@ func (base ServiceBase) queryAndPage(query interface{}, slice interface{}, skip 
 // GetOne : returns a single instance of an object
 func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter res must be a pointer" }
+		return InvalidArgument{Description: "parameter res must be a pointer"}
 	}
 
 	opts := options.Find()
@@ -127,7 +126,7 @@ func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 // GetByHexID returns an especific element its hexa string representation
 func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter res must be a pointer" }
+		return InvalidArgument{Description: "parameter res must be a pointer"}
 	}
 	objID, err := primitive.ObjectIDFromHex(hexID)
 	if err != nil {
@@ -142,7 +141,7 @@ func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
 // GetByObjID returns an especific element its objectiid
 func (base ServiceBase) GetByObjID(objID primitive.ObjectID, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter res must be a pointer" }
+		return InvalidArgument{Description: "parameter res must be a pointer"}
 	}
 	if err := base.GetOne(bson.M{"_id": objID}, res); err != nil {
 		return err
@@ -153,7 +152,7 @@ func (base ServiceBase) GetByObjID(objID primitive.ObjectID, res interface{}) er
 // GetAll : returns all documents from collection
 func (base ServiceBase) GetAll(slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
-		return InvalidArgument{ Description : "parameter slice must be a pointer" }
+		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
 	if err := base.query(bson.D{{}}, slice); err != nil {
 		return err
@@ -174,7 +173,7 @@ func (base ServiceBase) GetWithSkipLimit(query interface{}, slice interface{}, s
 // CountAll returns a count of all documents in repository
 func (base ServiceBase) CountAll() (int64, error) {
 	col := database.Collection(base.collectionName)
-	cnt, err := col.Count(nil, bson.D{{}})
+	cnt, err := col.CountDocuments(nil, bson.D{{}})
 	if err != nil {
 		return 0, err
 	}
@@ -184,7 +183,7 @@ func (base ServiceBase) CountAll() (int64, error) {
 // CountWithFilter returns a count of filtered documents
 func (base ServiceBase) CountWithFilter(query interface{}) (int64, error) {
 	col := database.Collection(base.collectionName)
-	cnt, err := col.Count(context.Background(), query)
+	cnt, err := col.CountDocuments(context.Background(), query)
 	if err != nil {
 		return 0, err
 	}
