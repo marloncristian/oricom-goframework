@@ -204,6 +204,9 @@ func (base ServiceBase) InsertOne(value interface{}) (primitive.ObjectID, error)
 func (base ServiceBase) UpdateOne(id primitive.ObjectID, values map[string]interface{}, result interface{}) error {
 	col := database.Collection(base.collectionName)
 	doc := col.FindOneAndUpdate(context.Background(), bson.M{"_id": id}, bson.M{"$set": values})
+	if doc.Err() != nil {
+		return doc.Err()
+	}
 	if result == nil {
 		return nil
 	}
