@@ -108,3 +108,12 @@ func GetTokenSubFromHeader(r *http.Request) (string, error) {
 	}
 	return GetTokenSub(token), nil
 }
+
+// GetTokenClaimFromHeader extracts an specific key/claim from bearer token
+func GetTokenClaimFromHeader(claim string, r *http.Request) (string, error) {
+	token, err := ParseTokenFromHeader(r)
+	if err != nil {
+		return "", err
+	}
+	return token[claim].(string), nil
+}
