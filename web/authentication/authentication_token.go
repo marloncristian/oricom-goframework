@@ -74,7 +74,7 @@ func (token *AuthenticationToken) Decode(tokenString string) error {
 	}
 	if claims, ok := tkn.Claims.(jwt.MapClaims); ok && tkn.Valid {
 		token.Subscriber = claims["sub"].(string)
-		token.Name = claims["nam"].(string)
+		token.Name = claims["name"].(string)
 		token.Role = NewAuthenticationTokenRole(concatClaim("role", claims))
 		token.Expiration = claims["exp"].(time.Time)
 		token.claims = claims
