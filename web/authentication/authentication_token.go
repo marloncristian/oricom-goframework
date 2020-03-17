@@ -9,38 +9,38 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-// Token struct for token manipulation
-type Token struct {
+// AuthenticationToken struct for token manipulation
+type AuthenticationToken struct {
 	Subscriber string
 	Name       string
-	Role       *TokenRole
+	Role       *AuthenticationTokenRole
 	Expiration time.Time
 	claims     jwt.MapClaims
 }
 
-// TokenRole struct for role manipulation
-type TokenRole struct {
+// AuthenticationTokenRole struct for role manipulation
+type AuthenticationTokenRole struct {
 	Roles []string
 }
 
-// NewToken creates a new token object
-func NewToken(sub string, name string, roles []string) Token {
-	return Token{
+// NewAuthenticationToken creates a new token object
+func NewAuthenticationToken(sub string, name string, roles []string) AuthenticationToken {
+	return AuthenticationToken{
 		Subscriber: sub,
 		Name:       name,
 		Role:       NewTokenRole(roles),
 	}
 }
 
-// NewTokenRole creates a new token role object
-func NewTokenRole(roles []string) *TokenRole {
-	return &TokenRole{
+// NewAuthenticationTokenRole creates a new token role object
+func NewAuthenticationTokenRole(roles []string) *AuthenticationTokenRole {
+	return &AuthenticationTokenRole{
 		Roles: roles,
 	}
 }
 
 // Encode return a string encoded token
-func (token *Token) Encode() (string, error) {
+func (token *AuthenticationToken) Encode() (string, error) {
 	tkn := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":  token.Subscriber,
 		"name": token.Name,
@@ -55,7 +55,7 @@ func (token *Token) Encode() (string, error) {
 }
 
 // Decode decodes a encripted string to a token object
-func (token *Token) Decode(tokenString string) error {
+func (token *AuthenticationToken) Decode(tokenString string) error {
 	tkn, err := jwt.Parse(tokenString, func(tknJwt *jwt.Token) (interface{}, error) {
 		if _, ok := tknJwt.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", tknJwt.Header["alg"])
@@ -84,7 +84,7 @@ func (token *Token) Decode(tokenString string) error {
 }
 
 // Claim returns a claim value
-func (token *Token) Claim(claim string) (interface{}, error) {
+func (token *AuthenticationToken) Claim(claim string) (interface{}, error) {
 	if token.claims == nil {
 		return nil, errors.New("Claims are empty")
 	}
@@ -92,7 +92,7 @@ func (token *Token) Claim(claim string) (interface{}, error) {
 }
 
 // Check verifies if a role exists in the array
-func (tokenRole *TokenRole) Check(role string) bool {
+func (tokenRole *AuthenticationTokenRole) Check(role string) bool {
 	for _, rol := range tokenRole.Roles {
 		if strings.ToLower(rol) == strings.ToLower(role) {
 			return true
@@ -102,7 +102,7 @@ func (tokenRole *TokenRole) Check(role string) bool {
 }
 
 // Empty returns if roles are empty
-func (tokenRole *TokenRole) Empty() bool {
+func (tokenRole *AuthenticationTokenRole) Empty() bool {
 	return len(tokenRole.Roles) == 0
 }
 
