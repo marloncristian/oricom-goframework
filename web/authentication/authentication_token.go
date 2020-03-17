@@ -28,7 +28,7 @@ func NewAuthenticationToken(sub string, name string, roles []string) Authenticat
 	return AuthenticationToken{
 		Subscriber: sub,
 		Name:       name,
-		Role:       NewTokenRole(roles),
+		Role:       NewAuthenticationTokenRole(roles),
 	}
 }
 
@@ -75,7 +75,7 @@ func (token *AuthenticationToken) Decode(tokenString string) error {
 	if claims, ok := tkn.Claims.(jwt.MapClaims); ok && tkn.Valid {
 		token.Subscriber = claims["sub"].(string)
 		token.Name = claims["nam"].(string)
-		token.Role = NewTokenRole(concatClaim("role", claims))
+		token.Role = NewAuthenticationTokenRole(concatClaim("role", claims))
 		token.Expiration = claims["exp"].(time.Time)
 		token.claims = claims
 		return nil
