@@ -226,8 +226,8 @@ func (base RepositoryBase) DeleteOne(id primitive.ObjectID) error {
 	return nil
 }
 
-// NewServiceBase creates a new service base
-func NewServiceBase(collectionName string) RepositoryBase {
+// NewRepositoryBase creates a new service base
+func NewRepositoryBase(collectionName string) RepositoryBase {
 	return RepositoryBase{
 		collectionName: collectionName,
 	}
