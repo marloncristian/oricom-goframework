@@ -10,13 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// ServiceBase base service struct
-type ServiceBase struct {
+// RepositoryBase base service struct
+type RepositoryBase struct {
 	collectionName string
 }
 
 // fill parses and fill the collection documents
-func (base ServiceBase) fill(slice interface{}, cursor *mongo.Cursor) error {
+func (base RepositoryBase) fill(slice interface{}, cursor *mongo.Cursor) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
@@ -49,7 +49,7 @@ func (base ServiceBase) fill(slice interface{}, cursor *mongo.Cursor) error {
 }
 
 // query retrieves documents by query or all
-func (base ServiceBase) query(query interface{}, slice interface{}) error {
+func (base RepositoryBase) query(query interface{}, slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
@@ -69,7 +69,7 @@ func (base ServiceBase) query(query interface{}, slice interface{}) error {
 }
 
 // queryAndPage retrieves an specific page of a document query
-func (base ServiceBase) queryAndPage(query interface{}, slice interface{}, skip int64, limit int64) error {
+func (base RepositoryBase) queryAndPage(query interface{}, slice interface{}, skip int64, limit int64) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
@@ -93,7 +93,7 @@ func (base ServiceBase) queryAndPage(query interface{}, slice interface{}, skip 
 }
 
 // GetOne : returns a single instance of an object
-func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
+func (base RepositoryBase) GetOne(query interface{}, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter res must be a pointer"}
 	}
@@ -124,7 +124,7 @@ func (base ServiceBase) GetOne(query interface{}, res interface{}) error {
 }
 
 // GetByHexID returns an especific element its hexa string representation
-func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
+func (base RepositoryBase) GetByHexID(hexID string, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter res must be a pointer"}
 	}
@@ -139,7 +139,7 @@ func (base ServiceBase) GetByHexID(hexID string, res interface{}) error {
 }
 
 // GetByObjID returns an especific element its objectiid
-func (base ServiceBase) GetByObjID(objID primitive.ObjectID, res interface{}) error {
+func (base RepositoryBase) GetByObjID(objID primitive.ObjectID, res interface{}) error {
 	if reflect.ValueOf(res).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter res must be a pointer"}
 	}
@@ -150,7 +150,7 @@ func (base ServiceBase) GetByObjID(objID primitive.ObjectID, res interface{}) er
 }
 
 // GetAll : returns all documents from collection
-func (base ServiceBase) GetAll(slice interface{}) error {
+func (base RepositoryBase) GetAll(slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
 		return InvalidArgument{Description: "parameter slice must be a pointer"}
 	}
@@ -161,17 +161,17 @@ func (base ServiceBase) GetAll(slice interface{}) error {
 }
 
 // GetAllWithSkipLimit retrieves chunks of information defined by parameters skip and limit
-func (base ServiceBase) GetAllWithSkipLimit(slice interface{}, skip int64, limit int64) error {
+func (base RepositoryBase) GetAllWithSkipLimit(slice interface{}, skip int64, limit int64) error {
 	return base.queryAndPage(bson.D{{}}, slice, skip, limit)
 }
 
 // GetWithSkipLimit returns a filtered and paged document list from repository
-func (base ServiceBase) GetWithSkipLimit(query interface{}, slice interface{}, skip int64, limit int64) error {
+func (base RepositoryBase) GetWithSkipLimit(query interface{}, slice interface{}, skip int64, limit int64) error {
 	return base.queryAndPage(query, slice, skip, limit)
 }
 
 // CountAll returns a count of all documents in repository
-func (base ServiceBase) CountAll() (int64, error) {
+func (base RepositoryBase) CountAll() (int64, error) {
 	col := database.Collection(base.collectionName)
 	cnt, err := col.CountDocuments(nil, bson.D{{}})
 	if err != nil {
@@ -181,7 +181,7 @@ func (base ServiceBase) CountAll() (int64, error) {
 }
 
 // CountWithFilter returns a count of filtered documents
-func (base ServiceBase) CountWithFilter(query interface{}) (int64, error) {
+func (base RepositoryBase) CountWithFilter(query interface{}) (int64, error) {
 	col := database.Collection(base.collectionName)
 	cnt, err := col.CountDocuments(context.Background(), query)
 	if err != nil {
@@ -191,7 +191,7 @@ func (base ServiceBase) CountWithFilter(query interface{}) (int64, error) {
 }
 
 //InsertOne : inserts a new object in repository
-func (base ServiceBase) InsertOne(value interface{}) (primitive.ObjectID, error) {
+func (base RepositoryBase) InsertOne(value interface{}) (primitive.ObjectID, error) {
 	c := database.Collection(base.collectionName)
 	res, err := c.InsertOne(context.Background(), value)
 	if err != nil {
@@ -201,7 +201,7 @@ func (base ServiceBase) InsertOne(value interface{}) (primitive.ObjectID, error)
 }
 
 // UpdateOne : updates an document
-func (base ServiceBase) UpdateOne(id primitive.ObjectID, values map[string]interface{}, result interface{}) error {
+func (base RepositoryBase) UpdateOne(id primitive.ObjectID, values map[string]interface{}, result interface{}) error {
 	col := database.Collection(base.collectionName)
 	doc := col.FindOneAndUpdate(context.Background(), bson.M{"_id": id}, bson.M{"$set": values})
 	if doc.Err() != nil {
@@ -217,7 +217,7 @@ func (base ServiceBase) UpdateOne(id primitive.ObjectID, values map[string]inter
 }
 
 // DeleteOne removes an elemento from database
-func (base ServiceBase) DeleteOne(id primitive.ObjectID) error {
+func (base RepositoryBase) DeleteOne(id primitive.ObjectID) error {
 	col := database.Collection(base.collectionName)
 	_, err := col.DeleteOne(context.Background(), bson.M{"_id": id})
 	if err != nil {
@@ -227,8 +227,8 @@ func (base ServiceBase) DeleteOne(id primitive.ObjectID) error {
 }
 
 // NewServiceBase creates a new service base
-func NewServiceBase(collectionName string) ServiceBase {
-	return ServiceBase{
+func NewServiceBase(collectionName string) RepositoryBase {
+	return RepositoryBase{
 		collectionName: collectionName,
 	}
 }
