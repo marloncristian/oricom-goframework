@@ -3,6 +3,7 @@ package authentication
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -72,11 +73,15 @@ func (token *AuthenticationToken) Decode(tokenString string) error {
 		}
 		return val
 	}
+	unixToTime := func(timeFloat float64) time.Time {
+		sec, dec := math.Modf(timeFloat)
+		return time.Unix(int64(sec), int64(dec*(1e9)))
+	}
 	if claims, ok := tkn.Claims.(jwt.MapClaims); ok && tkn.Valid {
 		token.Subscriber = claims["sub"].(string)
 		token.Name = claims["name"].(string)
 		token.Role = NewAuthenticationTokenRole(concatClaim("role", claims))
-		token.Expiration = claims["exp"].(time.Time)
+		token.Expiration = unixToTime(claims["exp"].(float64))
 		token.claims = claims
 		return nil
 	}
