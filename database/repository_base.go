@@ -48,6 +48,26 @@ func (base RepositoryBase) fill(slice interface{}, cursor *mongo.Cursor) error {
 	return nil
 }
 
+// Aggregate executes a aggregated command in the database
+func (base RepositoryBase) Aggregate(pipeline interface{}, slice interface{}) error {
+	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
+		return InvalidArgument{Description: "parameter slice must be a pointer"}
+	}
+
+	col := database.Collection(base.collectionName)
+	cur, err := col.Aggregate(nil, pipeline)
+	if err != nil {
+		return err
+	}
+
+	defer cur.Close(context.Background())
+	if err := base.fill(slice, cur); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // query retrieves documents by query or all
 func (base RepositoryBase) query(query interface{}, slice interface{}) error {
 	if reflect.ValueOf(slice).Kind() != reflect.Ptr {
