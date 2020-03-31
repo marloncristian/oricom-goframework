@@ -96,6 +96,20 @@ func (token *AuthenticationToken) Claim(claim string) (interface{}, error) {
 	return token.claims[claim], nil
 }
 
+// Expired verifies if the token is expired
+func (token *AuthenticationToken) Expired() (bool, error) {
+	clm, err := token.Claim("exp")
+	if err != nil {
+		return false, err
+	}
+	clmObj, ok := clm.(int)
+	if !ok {
+		return false, errors.New("unknow type")
+	}
+	exp := time.Unix(int64(clmObj), 0)
+	return exp.After(time.Now()), nil
+}
+
 // Check verifies if a role exists in the array
 func (tokenRole *AuthenticationTokenRole) Check(role string) bool {
 	for _, rol := range tokenRole.Roles {
@@ -110,44 +124,3 @@ func (tokenRole *AuthenticationTokenRole) Check(role string) bool {
 func (tokenRole *AuthenticationTokenRole) Empty() bool {
 	return len(tokenRole.Roles) == 0
 }
-
-/*
-
-// CreateToken : creates a jwt token for a especific user
-func CreateToken(sub string, name string, role []string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":  sub,
-		"name": name,
-		"role": role,
-		"exp":  time.Now().Add(time.Hour * time.Duration(24)).Unix(),
-	})
-	tokenString, err := token.SignedString([]byte(tokenSecret))
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
-}
-
-// ParseToken validates a token
-func ParseToken(tokenString string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(tokenSecret), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	}
-	return nil, errors.New("Invalid token")
-}
-
-// GetTokenSub Gets the sub claim of the token
-func GetTokenSub(tkn jwt.MapClaims) string {
-	return tkn["sub"].(string)
-}
-*/
