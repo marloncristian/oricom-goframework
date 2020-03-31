@@ -17,6 +17,7 @@ type AuthenticationToken struct {
 	Role       *AuthenticationTokenRole
 	Expiration time.Time
 	claims     jwt.MapClaims
+	Source     string
 }
 
 // AuthenticationTokenRole struct for role manipulation
@@ -83,6 +84,7 @@ func (token *AuthenticationToken) Decode(tokenString string) error {
 		token.Role = NewAuthenticationTokenRole(concatClaim("role", claims))
 		token.Expiration = unixToTime(claims["exp"].(float64))
 		token.claims = claims
+		token.Source = tokenString
 		return nil
 	}
 	return errors.New("Invalid token")
