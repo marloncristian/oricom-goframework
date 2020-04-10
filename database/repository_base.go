@@ -236,6 +236,13 @@ func (base RepositoryBase) UpdateOne(id primitive.ObjectID, values map[string]in
 	return nil
 }
 
+// ReplaceOne replace an entire document
+func (base RepositoryBase) ReplaceOne(id primitive.ObjectID, entity interface{}) (err error) {
+	col := database.Collection(base.collectionName)
+	_, err = col.ReplaceOne(context.Background(), bson.M{"_id": id}, entity)
+	return
+}
+
 // DeleteOne removes an elemento from database
 func (base RepositoryBase) DeleteOne(id primitive.ObjectID) error {
 	col := database.Collection(base.collectionName)
