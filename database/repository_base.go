@@ -221,9 +221,9 @@ func (base RepositoryBase) InsertOne(value interface{}) (primitive.ObjectID, err
 }
 
 // UpdateOne : updates an document
-func (base RepositoryBase) UpdateOne(id primitive.ObjectID, values map[string]interface{}, result interface{}) error {
+func (base RepositoryBase) UpdateOne(id primitive.ObjectID, update interface{}, result interface{}) error {
 	col := database.Collection(base.collectionName)
-	doc := col.FindOneAndUpdate(context.Background(), bson.M{"_id": id}, bson.M{"$set": values})
+	doc := col.FindOneAndUpdate(context.Background(), bson.M{"_id": id}, update)
 	if doc.Err() != nil {
 		return doc.Err()
 	}
